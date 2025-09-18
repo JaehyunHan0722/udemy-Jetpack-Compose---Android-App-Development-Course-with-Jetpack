@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -87,6 +88,18 @@ fun MainPage() {
     val clickedItemIndex = remember {
         mutableIntStateOf(0)
     }
+    val updateDialogStatus = remember {
+        mutableStateOf(false)
+    }
+    val clickedItem = remember {
+        mutableStateOf("")
+    }
+    val isUpdated = remember {
+        mutableStateOf(false)
+    }
+    val textDialogStatus = remember {
+        mutableStateOf(false)
+    }
 
     Scaffold {
         Column(
@@ -164,7 +177,14 @@ fun MainPage() {
 
             //Column that shows added items
             LazyColumn(
-                modifier = Modifier.padding(horizontal = 7.dp)
+                modifier = Modifier
+                    .padding(horizontal = 7.dp)
+                    .clickable(
+                        enabled = true,
+                        onClick = {
+                            focusManager.clearFocus()
+                        }
+                    )
             ) {
                 items(
                     count = itemList.size,
@@ -194,7 +214,12 @@ fun MainPage() {
                                     fontSize = 18.sp,
                                     maxLines = 2,
                                     overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.width(300.dp)
+                                    modifier = Modifier
+                                        .width(300.dp)
+                                        .clickable {
+                                            clickedItem.value = item
+                                            textDialogStatus.value = true
+                                        }
                                 )
                                 Row(
 
@@ -202,7 +227,9 @@ fun MainPage() {
                                     //Button EDIT
                                     IconButton(
                                         onClick = {
-
+                                            updateDialogStatus.value = true
+                                            clickedItemIndex.intValue = it
+                                            clickedItem.value = item
                                         }
                                     ) {
                                         Icon(
@@ -217,7 +244,7 @@ fun MainPage() {
 //                                            itemList.remove(item)
 //                                            writeData(itemList, myContext)
                                             deleteDialogStatus.value = true
-                                            clickedItemIndex.value = it
+                                            clickedItemIndex.intValue = it
                                         }
                                     ) {
                                         Icon(
@@ -265,6 +292,72 @@ fun MainPage() {
                             Text(text = "No")
                         }
                     }
+                )
+            }
+
+            if (updateDialogStatus.value) {
+                AlertDialog(
+                    onDismissRequest = {
+//                        updateDialogStatus.value = false
+                    },
+                    title = { Text(text = "Update") },
+                    text = {
+                        TextField(
+                            value = clickedItem.value,
+                            onValueChange = { changedValue ->
+                                clickedItem.value = changedValue
+
+                                isUpdated.value = clickedItem.value == changedValue
+                            }
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                Toast.makeText(
+                                    myContext,
+                                    "'Item is updated",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                itemList[clickedItemIndex.intValue] = clickedItem.value
+                                writeData(itemList, myContext)
+                                updateDialogStatus.value = false
+                                isUpdated.value = false
+                            },
+                            enabled = isUpdated.value
+                        ) {
+                            Text(text = "Yes")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = {
+                                updateDialogStatus.value = false
+                                isUpdated.value = false
+                            }
+                        ) {
+                            Text(text = "No")
+                        }
+                    }
+                )
+            }
+
+            if (textDialogStatus.value) {
+                AlertDialog(
+                    onDismissRequest = {
+                        textDialogStatus.value = false
+                    },
+                    title = { Text(text = "TODO Item") },
+                    text = {
+                        Text(text = clickedItem.value)
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = { textDialogStatus.value = false },
+                        ) {
+                            Text(text = "Ok")
+                        }
+                    },
                 )
             }
         }
