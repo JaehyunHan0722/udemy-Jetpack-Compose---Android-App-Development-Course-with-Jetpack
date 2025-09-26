@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">MathGameExapmle</string>
+    <string name="button_back">back</string>
+
+    <string-array name="category">
+        <item>Addition</item>
+        <item>Subtraction</item>
+        <item>Multiplication</item>
+        <item>Division</item>
+    </string-array>
+</resources>
